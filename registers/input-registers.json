@@ -17,27 +17,65 @@
   },
   "serial": {
     "slaveAddress": "1-247, default 1 (0 = broadcast, no reply)",
-    "baudRate": "9600 / 19200 / 38400 / 57600 / 115200",
-    "frame": "8-N-1"
+    "baudRate": "1200 / 2400 / 4800 / 9600 / 19200 / 38400 / 57600 / 115200",
+    "frame": "8-N-1",
+    "$note": "Baud list follows the PS7000 technical specification Rev.A (2026-08), which is newer than the Modbus manual and lists all eight rates."
   },
   "blocks": [
     {
       "name": "Legacy main value",
       "start": 1,
       "registers": [
-        {"reg": 1, "field": "mainValue", "type": "U16", "scale": 0.001, "unit": "see mainValueUnit", "desc": "Filtered main value multiplied by 1000, truncated to an integer. Kept for legacy masters that can only read one register. Prefer register 1026, which is a float and does not clip."}
+        {
+          "reg": 1,
+          "field": "mainValue",
+          "type": "U16",
+          "scale": 0.001,
+          "unit": "see mainValueUnit",
+          "desc": "Filtered main value multiplied by 1000, truncated to an integer. Kept for legacy masters that can only read one register. Prefer register 1026, which is a float and does not clip."
+        }
       ]
     },
     {
       "name": "Identification",
       "start": 800,
       "registers": [
-        {"reg": 800, "field": "swVersionMajor", "type": "U16", "desc": "Firmware version, major"},
-        {"reg": 801, "field": "swVersionMinor", "type": "U16", "desc": "Firmware version, minor"},
-        {"reg": 802, "field": "swVersionPatch", "type": "U16", "desc": "Firmware version, patch"},
-        {"reg": 803, "field": "hwVersionMajor", "type": "U16", "desc": "Hardware version, major"},
-        {"reg": 804, "field": "hwVersionMinor", "type": "U16", "desc": "Hardware version, minor"},
-        {"reg": 805, "field": "deviceType", "type": "U16", "desc": "Device identity, self-reported. 0x50 = density / concentration meter, 0x51 = spectral concentration meter. Firmware older than this feature answers exception 02; treat that as 'type unknown' rather than as an error."}
+        {
+          "reg": 800,
+          "field": "swVersionMajor",
+          "type": "U16",
+          "desc": "Firmware version, major"
+        },
+        {
+          "reg": 801,
+          "field": "swVersionMinor",
+          "type": "U16",
+          "desc": "Firmware version, minor"
+        },
+        {
+          "reg": 802,
+          "field": "swVersionPatch",
+          "type": "U16",
+          "desc": "Firmware version, patch"
+        },
+        {
+          "reg": 803,
+          "field": "hwVersionMajor",
+          "type": "U16",
+          "desc": "Hardware version, major"
+        },
+        {
+          "reg": 804,
+          "field": "hwVersionMinor",
+          "type": "U16",
+          "desc": "Hardware version, minor"
+        },
+        {
+          "reg": 805,
+          "field": "deviceType",
+          "type": "U16",
+          "desc": "Device identity, self-reported. 0x50 = density / concentration meter, 0x51 = spectral concentration meter. Firmware older than this feature answers exception 02; treat that as 'type unknown' rather than as an error."
+        }
       ]
     },
     {
@@ -45,82 +83,466 @@
       "start": 1000,
       "readAdvice": "The whole block can be read in one request. Function code 0x04 allows 125 registers per request, so read 1000-1086 (87 registers) in one go, or request individual fields.",
       "registers": [
-        {"reg": 1000, "field": "moduleStatus", "type": "U32", "desc": "Module status bit flags, see docs/error-codes.md"},
-        {"reg": 1002, "field": "wires", "type": "U16", "desc": "Hardware wire count. Not used, ignore."},
-        {"reg": 1003, "field": "initProgress", "type": "U16", "unit": "%", "desc": "Power-on initialisation progress, 0-100"},
-        {"reg": 1004, "field": "measureErrorCode", "type": "U16", "desc": "Measurement error bits, 0 = OK. See docs/error-codes.md. THIS is the field that tells you whether the reading is fresh."},
-        {"reg": 1005, "field": "systemErrorCode", "type": "U16", "desc": "System error bits, 0 = OK"},
-        {"reg": 1006, "field": "signalStrength", "type": "U16", "desc": "Echo signal strength"},
-        {"reg": 1007, "field": "signalQuality", "type": "F32", "desc": "Signal quality, 0.0-1.0"},
-        {"reg": 1009, "field": "currentCalibrationDataNo", "type": "U16", "desc": "Active calibration data set number"},
-        {"reg": 1010, "field": "currentCalibrationMethod", "type": "U16", "desc": "Active calibration method"},
-        {"reg": 1011, "field": "energyVoltage", "type": "F32", "unit": "mV", "desc": "Raw energy voltage"},
-        {"reg": 1013, "field": "energyVoltageFiltered", "type": "F32", "unit": "mV", "desc": "Filtered energy voltage"},
-        {"reg": 1015, "field": "energyChange", "type": "F32", "unit": "mV", "desc": "Energy change against the reference baseline"},
-        {"reg": 1017, "field": "energyChangeFiltered", "type": "F32", "unit": "mV", "desc": "Filtered energy change"},
-        {"reg": 1019, "field": "intermediateValueRaw", "type": "F32", "desc": "Intermediate result from the calibration table"},
-        {"reg": 1021, "field": "intermediateValueFiltered", "type": "F32", "desc": "Filtered intermediate result"},
-        {"reg": 1023, "field": "intermediateValueUnit", "type": "U16", "desc": "Unit code for the intermediate value, see unit table"},
-        {"reg": 1024, "field": "mainValueRaw", "type": "F32", "desc": "Main process value, unfiltered"},
-        {"reg": 1026, "field": "mainValueFiltered", "type": "F32", "primary": true, "desc": "Main process value, filtered. THIS IS THE ONE YOU WANT for control and trending."},
-        {"reg": 1028, "field": "mainValueUnit", "type": "U16", "desc": "Unit code for the main value, see unit table"},
-        {"reg": 1029, "field": "ok", "type": "U16", "desc": "Sampling quality for this cycle, 1 = good. NOT a freshness flag - see the warning in docs/error-codes.md before using it."},
-        {"reg": 1030, "field": "targetAverageCount", "type": "U16", "desc": "Configured averaging count"},
-        {"reg": 1031, "field": "actualAverageCount", "type": "U16", "desc": "Averaging count actually achieved this cycle"},
-        {"reg": 1032, "field": "energyStdDeviation", "type": "U16", "scale": 0.01, "desc": "Standard deviation of energy across frames"},
-        {"reg": 1033, "field": "energyRaw", "type": "U16", "desc": "Raw energy reading"},
-        {"reg": 1034, "field": "dc", "type": "U16", "scale": 0.1, "desc": "DC offset"},
-        {"reg": 1035, "field": "dcStdDeviation", "type": "U16", "scale": 0.01, "desc": "Standard deviation of the DC offset"},
-        {"reg": 1036, "field": "gain", "type": "U16", "desc": "Receive gain, recorded for diagnostics"},
-        {"reg": 1037, "field": "currentMode", "type": "U16", "desc": "0 = normal output, non-zero = current-loop calibration mode. When non-zero the 4-20 mA output is held at a fixed test value and does NOT follow the process."},
-        {"reg": 1038, "field": "output1Connected", "type": "U16", "desc": "Loop 1 detected as connected"},
-        {"reg": 1039, "field": "output1Type", "type": "U16", "desc": "What loop 1 carries: 0 = main value, 1 = temperature, 2 = energy"},
-        {"reg": 1040, "field": "output1Value", "type": "F32", "desc": "Process value mapped to loop 1"},
-        {"reg": 1042, "field": "output1Unit", "type": "U16", "desc": "Unit code for loop 1"},
-        {"reg": 1043, "field": "output1Percent", "type": "F32", "desc": "Loop 1 position within its span, 0.0-1.0"},
-        {"reg": 1045, "field": "output1Current", "type": "F32", "unit": "mA", "desc": "Loop 1 present current"},
-        {"reg": 1047, "field": "output1OldCurrent", "type": "F32", "unit": "mA", "desc": "Loop 1 previous current"},
-        {"reg": 1049, "field": "output2Connected", "type": "U16", "desc": "Loop 2 detected as connected"},
-        {"reg": 1050, "field": "output2Type", "type": "U16", "desc": "What loop 2 carries, same codes as output1Type"},
-        {"reg": 1051, "field": "output2Value", "type": "F32", "desc": "Process value mapped to loop 2"},
-        {"reg": 1053, "field": "output2Unit", "type": "U16", "desc": "Unit code for loop 2"},
-        {"reg": 1054, "field": "output2Percent", "type": "F32", "desc": "Loop 2 position within its span, 0.0-1.0"},
-        {"reg": 1056, "field": "output2Current", "type": "F32", "unit": "mA", "desc": "Loop 2 present current"},
-        {"reg": 1058, "field": "output2OldCurrent", "type": "F32", "unit": "mA", "desc": "Loop 2 previous current"},
-        {"reg": 1060, "field": "relayState", "type": "U16", "desc": "Relay output state"},
-        {"reg": 1061, "field": "txVoltage", "type": "U16", "scale": 0.01, "unit": "V", "desc": "Transmit excitation voltage"},
-        {"reg": 1062, "field": "adReference", "type": "U16", "unit": "mV", "desc": "ADC reference voltage"},
-        {"reg": 1063, "field": "referenceVoltagePoint1", "type": "U16", "unit": "mV", "desc": "Reference point 1"},
-        {"reg": 1064, "field": "referenceVoltagePoint2", "type": "U16", "unit": "mV", "desc": "Reference point 2"},
-        {"reg": 1065, "field": "mcuTemperature", "type": "I16", "scale": 0.1, "unit": "degC", "desc": "MCU die temperature"},
-        {"reg": 1066, "field": "boardTemperature", "type": "I16", "scale": 0.1, "unit": "degC", "desc": "Board temperature"},
-        {"reg": 1067, "field": "sensorTemperatureValid", "type": "U16", "desc": "1 = the probe temperature below is valid. Check this before trusting register 1068."},
-        {"reg": 1068, "field": "sensorTemperature", "type": "F32", "unit": "degC", "desc": "Probe (process) temperature from the PT1000"},
-        {"reg": 1070, "field": "gainAdjustSupported", "type": "U16", "desc": "Hardware supports programmable gain"},
-        {"reg": 1071, "field": "txGain", "type": "U16", "desc": "Transmit gain setting"},
-        {"reg": 1072, "field": "rxGain1", "type": "U16", "desc": "Receive gain stage 1"},
-        {"reg": 1073, "field": "rxGain2", "type": "U16", "desc": "Receive gain stage 2"},
-        {"reg": 1074, "field": "upTime", "type": "U32", "unit": "s", "desc": "Seconds since power-on. Useful for detecting an unexpected restart."},
-        {"reg": 1076, "field": "oneCycleCostTime", "type": "U16", "unit": "ms", "desc": "Duration of one measurement cycle. Poll no faster than this."},
-        {"reg": 1077, "field": "echoReadAddress", "type": "U16", "desc": "Waveform buffer read address"},
-        {"reg": 1078, "field": "echoLength", "type": "U16", "desc": "Waveform buffer length"},
-        {"reg": 1079, "field": "stepSize", "type": "U16", "desc": "Waveform sample step"},
-        {"reg": 1080, "field": "inputMin", "type": "U16", "unit": "mV", "desc": "Input range minimum"},
-        {"reg": 1081, "field": "inputMax", "type": "U16", "unit": "mV", "desc": "Input range maximum"},
-        {"reg": 1082, "field": "outputMin", "type": "U16", "unit": "mV", "desc": "Output range minimum"},
-        {"reg": 1083, "field": "outputMax", "type": "U16", "unit": "mV", "desc": "Output range maximum"},
-        {"reg": 1084, "field": "sampleFrequency", "type": "U16", "unit": "kHz", "desc": "Waveform sampling frequency"},
-        {"reg": 1085, "field": "echoOffsetTime", "type": "U16", "unit": "us", "desc": "Waveform window offset"},
-        {"reg": 1086, "field": "echoLengthTime", "type": "U16", "unit": "us", "desc": "Waveform window length"},
-        {"reg": 1104, "field": "gasIndex", "type": "U16", "since": "SW 4.x", "desc": "Entrained-gas index, 0-100. 0 = no gas detected. Instantaneous value - a single bubble crossing the beam can spike it. Derived from frame-to-frame variance, not from absolute echo amplitude, which is what lets it separate 'more bubbles' from 'more solids'."},
-        {"reg": 1113, "field": "gasIndexEma", "type": "U16", "since": "SW 4.x", "desc": "Time-smoothed entrained-gas index. This is the one to alarm on: it ignores isolated bubbles and responds to sustained gas. The instrument's own bubble flag is driven by this value exceeding its threshold for consecutive cycles."}
+        {
+          "reg": 1000,
+          "field": "moduleStatus",
+          "type": "U32",
+          "desc": "Module status bit flags, see docs/error-codes.md"
+        },
+        {
+          "reg": 1002,
+          "field": "wires",
+          "type": "U16",
+          "desc": "Hardware wire count. Not used, ignore."
+        },
+        {
+          "reg": 1003,
+          "field": "initProgress",
+          "type": "U16",
+          "unit": "%",
+          "desc": "Power-on initialisation progress, 0-100"
+        },
+        {
+          "reg": 1004,
+          "field": "measureErrorCode",
+          "type": "U16",
+          "desc": "Measurement error bits, 0 = OK. See docs/error-codes.md. THIS is the field that tells you whether the reading is fresh."
+        },
+        {
+          "reg": 1005,
+          "field": "systemErrorCode",
+          "type": "U16",
+          "desc": "System error bits, 0 = OK"
+        },
+        {
+          "reg": 1006,
+          "field": "signalStrength",
+          "type": "U16",
+          "desc": "Echo signal strength"
+        },
+        {
+          "reg": 1007,
+          "field": "signalQuality",
+          "type": "F32",
+          "desc": "Signal quality, 0.0-1.0"
+        },
+        {
+          "reg": 1009,
+          "field": "currentCalibrationDataNo",
+          "type": "U16",
+          "desc": "Active calibration data set number"
+        },
+        {
+          "reg": 1010,
+          "field": "currentCalibrationMethod",
+          "type": "U16",
+          "desc": "Active calibration method"
+        },
+        {
+          "reg": 1011,
+          "field": "energyVoltage",
+          "type": "F32",
+          "unit": "mV",
+          "desc": "Raw energy voltage"
+        },
+        {
+          "reg": 1013,
+          "field": "energyVoltageFiltered",
+          "type": "F32",
+          "unit": "mV",
+          "desc": "Filtered energy voltage"
+        },
+        {
+          "reg": 1015,
+          "field": "energyChange",
+          "type": "F32",
+          "unit": "mV",
+          "desc": "Energy change against the reference baseline"
+        },
+        {
+          "reg": 1017,
+          "field": "energyChangeFiltered",
+          "type": "F32",
+          "unit": "mV",
+          "desc": "Filtered energy change"
+        },
+        {
+          "reg": 1019,
+          "field": "intermediateValueRaw",
+          "type": "F32",
+          "desc": "Intermediate result from the calibration table"
+        },
+        {
+          "reg": 1021,
+          "field": "intermediateValueFiltered",
+          "type": "F32",
+          "desc": "Filtered intermediate result"
+        },
+        {
+          "reg": 1023,
+          "field": "intermediateValueUnit",
+          "type": "U16",
+          "desc": "Unit code for the intermediate value, see unit table"
+        },
+        {
+          "reg": 1024,
+          "field": "mainValueRaw",
+          "type": "F32",
+          "desc": "Main process value, unfiltered"
+        },
+        {
+          "reg": 1026,
+          "field": "mainValueFiltered",
+          "type": "F32",
+          "primary": true,
+          "desc": "Main process value, filtered. THIS IS THE ONE YOU WANT for control and trending."
+        },
+        {
+          "reg": 1028,
+          "field": "mainValueUnit",
+          "type": "U16",
+          "desc": "Unit code for the main value, see unit table"
+        },
+        {
+          "reg": 1029,
+          "field": "ok",
+          "type": "U16",
+          "desc": "Sampling quality for this cycle, 1 = good. NOT a freshness flag - see the warning in docs/error-codes.md before using it."
+        },
+        {
+          "reg": 1030,
+          "field": "targetAverageCount",
+          "type": "U16",
+          "desc": "Configured averaging count"
+        },
+        {
+          "reg": 1031,
+          "field": "actualAverageCount",
+          "type": "U16",
+          "desc": "Averaging count actually achieved this cycle"
+        },
+        {
+          "reg": 1032,
+          "field": "energyStdDeviation",
+          "type": "U16",
+          "scale": 0.01,
+          "desc": "Standard deviation of energy across frames"
+        },
+        {
+          "reg": 1033,
+          "field": "energyRaw",
+          "type": "U16",
+          "desc": "Raw energy reading"
+        },
+        {
+          "reg": 1034,
+          "field": "dc",
+          "type": "U16",
+          "scale": 0.1,
+          "desc": "DC offset"
+        },
+        {
+          "reg": 1035,
+          "field": "dcStdDeviation",
+          "type": "U16",
+          "scale": 0.01,
+          "desc": "Standard deviation of the DC offset"
+        },
+        {
+          "reg": 1036,
+          "field": "gain",
+          "type": "U16",
+          "desc": "Receive gain, recorded for diagnostics"
+        },
+        {
+          "reg": 1037,
+          "field": "currentMode",
+          "type": "U16",
+          "desc": "0 = normal output, non-zero = current-loop calibration mode. When non-zero the 4-20 mA output is held at a fixed test value and does NOT follow the process."
+        },
+        {
+          "reg": 1038,
+          "field": "output1Connected",
+          "type": "U16",
+          "desc": "Loop 1 detected as connected"
+        },
+        {
+          "reg": 1039,
+          "field": "output1Type",
+          "type": "U16",
+          "desc": "What loop 1 carries: 0 = main value, 1 = temperature, 2 = energy"
+        },
+        {
+          "reg": 1040,
+          "field": "output1Value",
+          "type": "F32",
+          "desc": "Process value mapped to loop 1"
+        },
+        {
+          "reg": 1042,
+          "field": "output1Unit",
+          "type": "U16",
+          "desc": "Unit code for loop 1"
+        },
+        {
+          "reg": 1043,
+          "field": "output1Percent",
+          "type": "F32",
+          "desc": "Loop 1 position within its span, 0.0-1.0"
+        },
+        {
+          "reg": 1045,
+          "field": "output1Current",
+          "type": "F32",
+          "unit": "mA",
+          "desc": "Loop 1 present current"
+        },
+        {
+          "reg": 1047,
+          "field": "output1OldCurrent",
+          "type": "F32",
+          "unit": "mA",
+          "desc": "Loop 1 previous current"
+        },
+        {
+          "reg": 1049,
+          "field": "output2Connected",
+          "type": "U16",
+          "desc": "Loop 2 detected as connected"
+        },
+        {
+          "reg": 1050,
+          "field": "output2Type",
+          "type": "U16",
+          "desc": "What loop 2 carries, same codes as output1Type"
+        },
+        {
+          "reg": 1051,
+          "field": "output2Value",
+          "type": "F32",
+          "desc": "Process value mapped to loop 2"
+        },
+        {
+          "reg": 1053,
+          "field": "output2Unit",
+          "type": "U16",
+          "desc": "Unit code for loop 2"
+        },
+        {
+          "reg": 1054,
+          "field": "output2Percent",
+          "type": "F32",
+          "desc": "Loop 2 position within its span, 0.0-1.0"
+        },
+        {
+          "reg": 1056,
+          "field": "output2Current",
+          "type": "F32",
+          "unit": "mA",
+          "desc": "Loop 2 present current"
+        },
+        {
+          "reg": 1058,
+          "field": "output2OldCurrent",
+          "type": "F32",
+          "unit": "mA",
+          "desc": "Loop 2 previous current"
+        },
+        {
+          "reg": 1060,
+          "field": "relayState",
+          "type": "U16",
+          "desc": "Relay output state"
+        },
+        {
+          "reg": 1061,
+          "field": "txVoltage",
+          "type": "U16",
+          "scale": 0.01,
+          "unit": "V",
+          "desc": "Transmit excitation voltage"
+        },
+        {
+          "reg": 1062,
+          "field": "adReference",
+          "type": "U16",
+          "unit": "mV",
+          "desc": "ADC reference voltage"
+        },
+        {
+          "reg": 1063,
+          "field": "referenceVoltagePoint1",
+          "type": "U16",
+          "unit": "mV",
+          "desc": "Reference point 1"
+        },
+        {
+          "reg": 1064,
+          "field": "referenceVoltagePoint2",
+          "type": "U16",
+          "unit": "mV",
+          "desc": "Reference point 2"
+        },
+        {
+          "reg": 1065,
+          "field": "mcuTemperature",
+          "type": "I16",
+          "scale": 0.1,
+          "unit": "degC",
+          "desc": "MCU die temperature"
+        },
+        {
+          "reg": 1066,
+          "field": "boardTemperature",
+          "type": "I16",
+          "scale": 0.1,
+          "unit": "degC",
+          "desc": "Board temperature"
+        },
+        {
+          "reg": 1067,
+          "field": "sensorTemperatureValid",
+          "type": "U16",
+          "desc": "1 = the probe temperature below is valid. Check this before trusting register 1068."
+        },
+        {
+          "reg": 1068,
+          "field": "sensorTemperature",
+          "type": "F32",
+          "unit": "degC",
+          "desc": "Probe (process) temperature from the PT1000"
+        },
+        {
+          "reg": 1070,
+          "field": "gainAdjustSupported",
+          "type": "U16",
+          "desc": "Hardware supports programmable gain"
+        },
+        {
+          "reg": 1071,
+          "field": "txGain",
+          "type": "U16",
+          "desc": "Transmit gain setting"
+        },
+        {
+          "reg": 1072,
+          "field": "rxGain1",
+          "type": "U16",
+          "desc": "Receive gain stage 1"
+        },
+        {
+          "reg": 1073,
+          "field": "rxGain2",
+          "type": "U16",
+          "desc": "Receive gain stage 2"
+        },
+        {
+          "reg": 1074,
+          "field": "upTime",
+          "type": "U32",
+          "unit": "s",
+          "desc": "Seconds since power-on. Useful for detecting an unexpected restart."
+        },
+        {
+          "reg": 1076,
+          "field": "oneCycleCostTime",
+          "type": "U16",
+          "unit": "ms",
+          "desc": "Duration of one measurement cycle. Poll no faster than this."
+        },
+        {
+          "reg": 1077,
+          "field": "echoReadAddress",
+          "type": "U16",
+          "desc": "Waveform buffer read address"
+        },
+        {
+          "reg": 1078,
+          "field": "echoLength",
+          "type": "U16",
+          "desc": "Waveform buffer length"
+        },
+        {
+          "reg": 1079,
+          "field": "stepSize",
+          "type": "U16",
+          "desc": "Waveform sample step"
+        },
+        {
+          "reg": 1080,
+          "field": "inputMin",
+          "type": "U16",
+          "unit": "mV",
+          "desc": "Input range minimum"
+        },
+        {
+          "reg": 1081,
+          "field": "inputMax",
+          "type": "U16",
+          "unit": "mV",
+          "desc": "Input range maximum"
+        },
+        {
+          "reg": 1082,
+          "field": "outputMin",
+          "type": "U16",
+          "unit": "mV",
+          "desc": "Output range minimum"
+        },
+        {
+          "reg": 1083,
+          "field": "outputMax",
+          "type": "U16",
+          "unit": "mV",
+          "desc": "Output range maximum"
+        },
+        {
+          "reg": 1084,
+          "field": "sampleFrequency",
+          "type": "U16",
+          "unit": "kHz",
+          "desc": "Waveform sampling frequency"
+        },
+        {
+          "reg": 1085,
+          "field": "echoOffsetTime",
+          "type": "U16",
+          "unit": "us",
+          "desc": "Waveform window offset"
+        },
+        {
+          "reg": 1086,
+          "field": "echoLengthTime",
+          "type": "U16",
+          "unit": "us",
+          "desc": "Waveform window length"
+        },
+        {
+          "reg": 1104,
+          "field": "gasIndex",
+          "type": "U16",
+          "since": "SW 4.x",
+          "desc": "Entrained-gas index, 0-100. 0 = no gas detected. Instantaneous value - a single bubble crossing the beam can spike it. Derived from frame-to-frame variance, not from absolute echo amplitude, which is what lets it separate 'more bubbles' from 'more solids'."
+        },
+        {
+          "reg": 1113,
+          "field": "gasIndexEma",
+          "type": "U16",
+          "since": "SW 4.x",
+          "desc": "Time-smoothed entrained-gas index. This is the one to alarm on: it ignores isolated bubbles and responds to sustained gas. The instrument's own bubble flag is driven by this value exceeding its threshold for consecutive cycles."
+        }
       ]
     },
     {
       "name": "History",
       "start": 7990,
       "registers": [
-        {"reg": 7990, "field": "historyCapacity", "type": "U16", "desc": "Number of history records the instrument can hold. Self-describing: read this before walking the history area. Firmware without this register answers exception 02."}
+        {
+          "reg": 7990,
+          "field": "historyCapacity",
+          "type": "U16",
+          "desc": "Number of history records the instrument can hold. Self-describing: read this before walking the history area. Firmware without this register answers exception 02."
+        }
       ]
     }
   ]

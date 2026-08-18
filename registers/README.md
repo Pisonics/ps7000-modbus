@@ -10,7 +10,7 @@
 
 1. **Register numbers here are 1-based. The start address placed in the request frame is register number MINUS ONE.** To read register 1026, put 1025 (0x0401) in the frame.
 2. **Word order for 32-bit values is CDAB - low word first, then high word.** Most Modbus masters default to ABCD. Set word order to 'little' / 'swapped' or floats will decode as nonsense.
-3. Serial defaults: 8-N-1, slave 1-247, default 1 (0 = broadcast, no reply), baud 9600 / 19200 / 38400 / 57600 / 115200.
+3. Serial defaults: 8-N-1, slave 1-247, default 1 (0 = broadcast, no reply), baud 1200 / 2400 / 4800 / 9600 / 19200 / 38400 / 57600 / 115200.
 
 > Register numbers below are stable from SW 3.3.26 onward. The measurement block is append-only: newer firmware adds fields at the end and never moves an existing one.
 

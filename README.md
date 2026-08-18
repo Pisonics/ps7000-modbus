@@ -1,5 +1,7 @@
 # PS7000 Modbus register map
 
+English · [中文](README.zh-CN.md)
+
 Read-only Modbus RTU register map and working example clients for the
 **Pisonics PS7000** ultrasonic slurry density meter — a non-nuclear inline
 density meter that measures acoustic impedance, so it needs no radioactive
